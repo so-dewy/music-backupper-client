@@ -1,4 +1,7 @@
 import styled from 'styled-components'
+import { useEffect, useState } from 'react';
+import { API_BASE_URL, exportPlaylists, getPlaylists, getUserInfo } from './api/spotify/spotifyApi';
+import { Playlists, PlaylistState } from './playlists/Playlists';
 
 const StyledLink = styled.a`
   background-color: magenta;
@@ -12,27 +15,55 @@ const StyledLink = styled.a`
 `
 
 function App() {
-  const params = getHashParams();
+  const [userInfo, setUserInfo] = useState({ display_name: '' });
+  const [playlists, setPlaylists] = useState<PlaylistState[]>([] as any);
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    getUserInfo()
+      .then(res => setUserInfo(res));
+
+    getPlaylists()
+      .then(res => setPlaylists(res));
+  }, []);
+
+  const requestExport = () => {
+    const selectedPlaylists = playlists.filter(el => el.checked);
+    console.log(selectedPlaylists);
+  
+    exportPlaylists(selectedPlaylists, selectAll)
+      .then(res => console.log(res));
+  };
+
+  const playlistChangeHandler = (playlist: PlaylistState, newVal: boolean) => {
+    const newState = playlists.map(pl => pl.id === playlist.id ? { ...playlist, checked: newVal} : pl);
+    setPlaylists(newState);
+  };
+
+  const selectAllChangeHandler = (selectAllChange: boolean) => {
+    setSelectAll(selectAllChange);
+    const changedPlaylistsState = playlists.map(pl => { return { ...pl, checked: selectAllChange } });
+    setPlaylists(changedPlaylistsState);
+  };
+
   return (
     <div>
-      <StyledLink href='http://localhost:8888/login'>Sign in to Spotify</StyledLink>
-      <div>access_token: {params && params.access_token}</div>
-      <div>refresh_token: {params && params.refresh_token}</div>
+      <StyledLink href={`${API_BASE_URL}/oauth2/authorization/spotify`}>Sign in to Spotify</StyledLink>
+      <div>Hello, {userInfo && userInfo.display_name}, select playlists you wish to export </div>
+      <label>
+        <input 
+          type="checkbox" 
+          name="selectAll" 
+          checked={selectAll}
+          onChange={(e) => selectAllChangeHandler(e.target.checked)}
+        />
+        Select all
+      </label>
+      <Playlists playlists={playlists} playlistChangeHandler={playlistChangeHandler}></Playlists>
+      <button onClick={() => requestExport()}>Export</button>
     </div>
   );
-}
-
-function getHashParams() {
-  const hashParams: { [key: string]: string} = {};
-  const regex = /([^&;=]+)=?([^&;]*)/g;
-  const q = window.location.hash.substring(1);
-  let res;
-  res = regex.exec(q);
-  while (res) {
-     hashParams[res[1]] = decodeURIComponent(res[2]);
-     res = regex.exec(q);
-  }
-  return hashParams;
 }
 
 export default App;
