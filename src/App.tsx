@@ -30,10 +30,8 @@ function App() {
 
   const requestExport = () => {
     const selectedPlaylists = playlists.filter(el => el.checked);
-    console.log(selectedPlaylists);
   
-    exportPlaylists(selectedPlaylists, selectAll)
-      .then(res => console.log(res));
+    exportPlaylists(selectedPlaylists, selectAll);
   };
 
   const playlistChangeHandler = (playlist: PlaylistState, newVal: boolean) => {

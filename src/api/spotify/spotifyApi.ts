@@ -19,7 +19,24 @@ export function exportPlaylists(selectedPlaylists: PlaylistState[], selectAll: b
     } 
     queryParams.append('ids', ids);
   }
-  return fetchApi<any>(`${API_BASE_URL}/spotify/user/playlists/export?${queryParams.toString()}`, {credentials: 'include'});
+
+  fetch(`${API_BASE_URL}/spotify/user/playlists/export?${queryParams.toString()}`, {credentials: 'include'})
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText)
+      }
+
+      const filename = response.headers.get('Content-Disposition')?.split('filename=')[1];
+      
+      return response.blob().then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = filename || 'playlists.json';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+    })
 }
 
 export function getPlaylists() {
