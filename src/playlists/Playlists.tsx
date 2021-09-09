@@ -1,15 +1,38 @@
 import styled from 'styled-components'
 
+export enum TablePageChangeAction {
+  Forward,
+  Backward
+}
+
+export interface PlaylistTablePaginationState {
+  offset: number,
+  limit: number,
+  total: number,
+  canGoForwards: boolean,
+  canGoBackwards: boolean
+}
+
+export interface PlaylistState {
+  id: string;
+  name: string;
+  checked: boolean;
+}
+
+interface PlaylistsProps {
+  tablePagination: PlaylistTablePaginationState, 
+  tablePaginationChangeHandler: (action: TablePageChangeAction) => void,
+  playlists: PlaylistState[], 
+  playlistChangeHandler: (playlist: PlaylistState, newVal: boolean) => void 
+}
+
 const PlaylistContainer = styled.div`
   display: grid;
   place-items: center;
   justify-content: center;
 `
-export function Playlists({ playlists, playlistChangeHandler }:
-  { 
-    playlists: PlaylistState[], 
-    playlistChangeHandler: (playlist: PlaylistState, newVal: boolean) => void 
-  }) {
+
+export function Playlists({ tablePagination, tablePaginationChangeHandler, playlists, playlistChangeHandler }: PlaylistsProps) {
   return (
     <PlaylistContainer>
       {playlists && playlists.map(pl => 
@@ -19,6 +42,19 @@ export function Playlists({ playlists, playlistChangeHandler }:
           changeHandler={playlistChangeHandler}
         ></Playlist>
       )}
+      <button 
+        onClick={() => tablePaginationChangeHandler(TablePageChangeAction.Backward)}
+        disabled={!tablePagination.canGoBackwards}
+      >
+        {'<'}
+      </button>
+      <button 
+        onClick={() => tablePaginationChangeHandler(TablePageChangeAction.Forward)} 
+        disabled={!tablePagination.canGoForwards}
+      >
+        {'>'}
+      </button>
+      <p>Total playlists: {tablePagination.total}</p>
     </PlaylistContainer>
   );  
 }
@@ -40,10 +76,4 @@ function Playlist({ playlist, changeHandler }:
       {playlist && playlist.name}
     </label>
   );  
-}
-
-export interface PlaylistState {
-  id: string;
-  name: string;
-  checked: boolean;
 }

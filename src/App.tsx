@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, exportPlaylists, getPlaylists, getUserInfo } from './api/spotify/spotifyApi';
-import { Playlists, PlaylistState } from './playlists/Playlists';
+import { Playlists, PlaylistState, PlaylistTablePaginationState, TablePageChangeAction } from './playlists/Playlists';
 
 const StyledLink = styled.a`
   background-color: magenta;
@@ -14,23 +14,10 @@ const StyledLink = styled.a`
   padding: 0 5px 0 5px;
 `
 
-enum TablePageChangeAction {
-  Forward,
-  Backward
-}
-
-interface TablePaginationState {
-  offset: number,
-  limit: number,
-  total: number,
-  canGoForwards: boolean,
-  canGoBackwards: boolean
-}
-
 function App() {
   const [userInfo, setUserInfo] = useState({ display_name: '' });
   const tablePaginationInit = { offset: 0, limit: 20, total: 0, canGoBackwards: false, canGoForwards: false };
-  const [tablePagination, setTablePagination] = useState<TablePaginationState>(tablePaginationInit);
+  const [tablePagination, setTablePagination] = useState<PlaylistTablePaginationState>(tablePaginationInit);
   const [playlists, setPlaylists] = useState<PlaylistState[]>([] as PlaylistState[]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
@@ -104,10 +91,12 @@ function App() {
         />
         Select all
       </label>
-      <Playlists playlists={playlists} playlistChangeHandler={playlistChangeHandler}></Playlists>
-      <button onClick={() => switchPage(TablePageChangeAction.Backward)} disabled={!tablePagination.canGoBackwards}>{'<'}</button>
-      <button onClick={() => switchPage(TablePageChangeAction.Forward)} disabled={!tablePagination.canGoForwards}>{'>'}</button>
-      <p>Total playlists: {tablePagination.total}</p>
+      <Playlists 
+        tablePagination={tablePagination}
+        tablePaginationChangeHandler={switchPage}
+        playlists={playlists}
+        playlistChangeHandler={playlistChangeHandler}
+      ></Playlists>
       <button onClick={() => requestExport()}>Export</button>
     </div>
   );
