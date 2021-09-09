@@ -1,3 +1,4 @@
+import { ExportType } from "../../App";
 import { PlaylistState } from "../../playlists/Playlists";
 import { fetchApi } from "../apiUtils";
 
@@ -7,10 +8,11 @@ export function getUserInfo() {
   return fetchApi<any>(`${API_BASE_URL}/spotify/user`, {credentials: 'include'});
 }
 
-export function exportPlaylists(selectedPlaylists: PlaylistState[], selectAll: boolean) {
+export function exportPlaylists(exportType: ExportType, selectedPlaylists: PlaylistState[], selectAll: boolean) {
   const queryParams = new URLSearchParams();
 
-  queryParams.append('exportType', 'XLSX');
+  queryParams.append('exportType', exportType);
+  
   if (selectAll) {
     queryParams.append('selectAll', 'true');
   } else {

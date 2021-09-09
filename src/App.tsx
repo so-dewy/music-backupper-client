@@ -13,6 +13,12 @@ const StyledLink = styled.a`
   display: inline-block;
   padding: 0 5px 0 5px;
 `
+export enum ExportType {
+  JSON = "JSON",
+  CSV = "CSV",
+  XLS = "XLS",
+  XLSX = "XLSX"
+}
 
 function App() {
   const [userInfo, setUserInfo] = useState({ display_name: '' });
@@ -20,7 +26,7 @@ function App() {
   const [tablePagination, setTablePagination] = useState<PlaylistTablePaginationState>(tablePaginationInit);
   const [playlists, setPlaylists] = useState<PlaylistState[]>([] as PlaylistState[]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-
+  const [exportType, setExportType] = useState<ExportType>(ExportType.XLSX);
 
   useEffect(() => {
     getUserInfo()
@@ -44,7 +50,7 @@ function App() {
   const requestExport = () => {
     const selectedPlaylists = playlists.filter(el => el.checked);
   
-    exportPlaylists(selectedPlaylists, selectAll);
+    exportPlaylists(exportType, selectedPlaylists, selectAll);
   };
 
   const switchPage = (action: TablePageChangeAction) => {
@@ -62,7 +68,7 @@ function App() {
           canGoBackwards: (data.offset - data.limit) >= 0
         });
 
-        const playlists = data.items.map(el => ({ id: el.id, name: el.name, checked: false } as PlaylistState));
+        const playlists = data.items.map(el => ({ id: el.id, name: el.name, checked: selectAll } as PlaylistState));
         setPlaylists(playlists);
       });
   };
@@ -97,7 +103,16 @@ function App() {
         playlists={playlists}
         playlistChangeHandler={playlistChangeHandler}
       ></Playlists>
-      <button onClick={() => requestExport()}>Export</button>
+      <label>
+        Export type:
+        <select value={exportType} onChange={e => setExportType(e.target.value as ExportType)}>
+          <option value={ExportType.XLSX} key={ExportType.XLSX}>Excel (.xlsx)</option>
+          <option value={ExportType.XLS} key={ExportType.XLS}>Excel (.xls)</option>
+          <option value={ExportType.CSV} key={ExportType.CSV}>CSV</option>
+          <option value={ExportType.JSON} key={ExportType.JSON}>JSON</option>
+        </select>
+      </label>
+      <button onClick={() => requestExport()} disabled={!selectAll && !playlists.some(el => el.checked)}>Export</button>
     </div>
   );
 }
