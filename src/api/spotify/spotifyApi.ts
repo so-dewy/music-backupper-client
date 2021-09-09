@@ -33,7 +33,7 @@ export function exportPlaylists(selectedPlaylists: PlaylistState[], selectAll: b
         const url = window.URL.createObjectURL(blob);
         let a = document.createElement('a');
         a.href = url;
-        a.download = filename || 'playlists.json';
+        a.download = filename || 'playlists.zip';
         a.click();
         window.URL.revokeObjectURL(url);
       });
