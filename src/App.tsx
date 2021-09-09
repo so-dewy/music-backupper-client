@@ -14,9 +14,24 @@ const StyledLink = styled.a`
   padding: 0 5px 0 5px;
 `
 
+enum TablePageChangeAction {
+  Forward,
+  Backward
+}
+
+interface TablePaginationState {
+  offset: number,
+  limit: number,
+  total: number,
+  canGoForwards: boolean,
+  canGoBackwards: boolean
+}
+
 function App() {
   const [userInfo, setUserInfo] = useState({ display_name: '' });
-  const [playlists, setPlaylists] = useState<PlaylistState[]>([] as any);
+  const tablePaginationInit = { offset: 0, limit: 20, total: 0, canGoBackwards: false, canGoForwards: false };
+  const [tablePagination, setTablePagination] = useState<TablePaginationState>(tablePaginationInit);
+  const [playlists, setPlaylists] = useState<PlaylistState[]>([] as PlaylistState[]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
 
@@ -24,14 +39,45 @@ function App() {
     getUserInfo()
       .then(res => setUserInfo(res));
 
-    getPlaylists()
-      .then(res => setPlaylists(res));
+    getPlaylists(tablePagination.offset, tablePagination.limit)
+      .then(data => {
+        setTablePagination({ 
+          offset: data.offset,
+          limit: data.limit,
+          total: data.total,
+          canGoForwards: (data.offset + data.limit) <= data.total,
+          canGoBackwards: (data.offset - data.limit) >= 0
+        });
+
+        const playlists = data.items.map(el => ({ id: el.id, name: el.name, checked: false } as PlaylistState));
+        setPlaylists(playlists);
+      });
   }, []);
 
   const requestExport = () => {
     const selectedPlaylists = playlists.filter(el => el.checked);
   
     exportPlaylists(selectedPlaylists, selectAll);
+  };
+
+  const switchPage = (action: TablePageChangeAction) => {
+    const offset = action === TablePageChangeAction.Forward ? 
+      tablePagination.offset + tablePagination.limit : 
+      tablePagination.offset - tablePagination.limit;
+
+    getPlaylists(offset, tablePagination.limit)
+      .then(data => {
+        setTablePagination({ 
+          offset,
+          limit: data.limit,
+          total: data.total,
+          canGoForwards: (data.offset + data.limit) <= data.total,
+          canGoBackwards: (data.offset - data.limit) >= 0
+        });
+
+        const playlists = data.items.map(el => ({ id: el.id, name: el.name, checked: false } as PlaylistState));
+        setPlaylists(playlists);
+      });
   };
 
   const playlistChangeHandler = (playlist: PlaylistState, newVal: boolean) => {
@@ -59,6 +105,9 @@ function App() {
         Select all
       </label>
       <Playlists playlists={playlists} playlistChangeHandler={playlistChangeHandler}></Playlists>
+      <button onClick={() => switchPage(TablePageChangeAction.Backward)} disabled={!tablePagination.canGoBackwards}>{'<'}</button>
+      <button onClick={() => switchPage(TablePageChangeAction.Forward)} disabled={!tablePagination.canGoForwards}>{'>'}</button>
+      <p>Total playlists: {tablePagination.total}</p>
       <button onClick={() => requestExport()}>Export</button>
     </div>
   );

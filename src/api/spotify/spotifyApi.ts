@@ -10,6 +10,7 @@ export function getUserInfo() {
 export function exportPlaylists(selectedPlaylists: PlaylistState[], selectAll: boolean) {
   const queryParams = new URLSearchParams();
 
+  queryParams.append('exportType', 'XLSX');
   if (selectAll) {
     queryParams.append('selectAll', 'true');
   } else {
@@ -39,11 +40,12 @@ export function exportPlaylists(selectedPlaylists: PlaylistState[], selectAll: b
     })
 }
 
-export function getPlaylists() {
-  return fetchApi<PlaylistsApiRes>(`${API_BASE_URL}/spotify/user/playlists`, {credentials: 'include'})
-    .then(data => 
-      data.items.map(el => ({ id: el.id, name: el.name, checked: false } as PlaylistState))
-    );
+export function getPlaylists(offset: number, limit: number) {
+  const queryParams = new URLSearchParams();
+  queryParams.append('offset', offset.toString());
+  queryParams.append('limit', limit.toString());
+
+  return fetchApi<PlaylistsApiRes>(`${API_BASE_URL}/spotify/user/playlists?${queryParams.toString()}`, {credentials: 'include'});
 }
 
 export interface PlaylistsApiRes {
