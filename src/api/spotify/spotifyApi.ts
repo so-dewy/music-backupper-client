@@ -1,11 +1,21 @@
-import { ExportType } from "../../App";
 import { PlaylistState } from "../../playlists/Playlists";
 import { fetchApi } from "../apiUtils";
 
 export const API_BASE_URL = 'http://localhost:8080'
 
+export enum ExportType {
+  JSON = "JSON",
+  CSV = "CSV",
+  XLS = "XLS",
+  XLSX = "XLSX"
+}
+
 export function getUserInfo() {
   return fetchApi<any>(`${API_BASE_URL}/spotify/user`, {credentials: 'include'});
+}
+
+export function isSignedIn() {
+  return fetchApi<boolean>(`${API_BASE_URL}/spotify/is-signed-in`, {credentials: 'include'});
 }
 
 export function exportPlaylists(exportType: ExportType, selectedPlaylists: PlaylistState[], selectAll: boolean) {
