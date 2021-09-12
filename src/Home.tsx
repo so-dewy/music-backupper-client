@@ -70,20 +70,13 @@ export const Home = () => {
   return (
     <>
       <div>Hello, {userInfo && userInfo.display_name}, select playlists you wish to export </div>
-      <label>
-        <input 
-          type="checkbox" 
-          name="selectAll" 
-          checked={selectAll}
-          onChange={(e) => selectAllChangeHandler(e.target.checked)}
-        />
-        Select all
-      </label>
       <Playlists 
         tablePagination={tablePagination}
         tablePaginationChangeHandler={switchPage}
         playlists={playlists}
         playlistChangeHandler={playlistChangeHandler}
+        selectAll={selectAll}
+        selectAllChangeHandler={selectAllChangeHandler}
       ></Playlists>
       <label>
         Export type:
@@ -95,7 +88,6 @@ export const Home = () => {
         </select>
       </label>
       <button onClick={() => requestExport()} disabled={!selectAll && !playlists.some(el => el.checked)}>Export</button>
-      {/* <button onClick={() => requestData()}>requestData</button> */}
     </>
   );
 }

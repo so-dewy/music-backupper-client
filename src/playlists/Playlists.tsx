@@ -23,7 +23,9 @@ interface PlaylistsProps {
   tablePagination: PlaylistTablePaginationState, 
   tablePaginationChangeHandler: (action: TablePageChangeAction) => void,
   playlists: PlaylistState[], 
-  playlistChangeHandler: (playlist: PlaylistState, newVal: boolean) => void 
+  playlistChangeHandler: (playlist: PlaylistState, newVal: boolean) => void,
+  selectAll: boolean, 
+  selectAllChangeHandler: (selectAllChange: boolean) => void 
 }
 
 const PlaylistContainer = styled.div`
@@ -32,9 +34,26 @@ const PlaylistContainer = styled.div`
   justify-content: center;
 `
 
-export function Playlists({ tablePagination, tablePaginationChangeHandler, playlists, playlistChangeHandler }: PlaylistsProps) {
+export function Playlists({ 
+  tablePagination, 
+  tablePaginationChangeHandler, 
+  playlists, 
+  playlistChangeHandler, 
+  selectAll, 
+  selectAllChangeHandler 
+}: PlaylistsProps) {
   return (
     <PlaylistContainer>
+
+      <label>
+        <input 
+          type="checkbox" 
+          name="selectAll" 
+          checked={selectAll}
+          onChange={(e) => selectAllChangeHandler(e.target.checked)}
+        />
+        Select all
+      </label>
       {playlists && playlists.map(pl => 
         <Playlist
           key={pl.id}
