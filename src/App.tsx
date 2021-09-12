@@ -19,13 +19,23 @@ function App() {
   const [signedIn, setSignedIn] = useState<boolean>(false);
 
   const signInHandler = () => {
+    const currentWindow: Window & { authSuccess?: boolean } = window;
     const url = `${API_BASE_URL}/oauth2/authorization/spotify`;
     const width = 500;
     const height = 400;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2.5;
+    const left = currentWindow.screenX + (window.outerWidth - width) / 2;
+    const top = currentWindow.screenY + (window.outerHeight - height) / 2.5;
     const title = `WINDOW TITLE`;
-    window.open(url, title, `width=${width},height=${height},left=${left},top=${top}`);
+    currentWindow.open(url, title, `width=${width},height=${height},left=${left},top=${top}`);
+
+    // monitor current window object for authSuccess flag being set from auth window
+    const timer = setInterval(() => {
+      if (currentWindow.authSuccess === undefined) return;
+  
+      setSignedIn(currentWindow.authSuccess);
+      delete currentWindow.authSuccess;
+      timer && clearInterval(timer);
+    }, 100);
   };
   
   useEffect(() => {
@@ -37,14 +47,14 @@ function App() {
     <Router>
       <div>
         <Switch>
-          <Route path="/">
-            <StyledButton onClick={signInHandler}>Sign in to Spotify</StyledButton>
+          <Route path="/auth-success">
+            <CloseWindow authSuccess={true}/>
           </Route>
-          {signedIn && <Route path="/home">
-            <Home />
-          </Route>}
-          <Route path="/yes">
-            <AuthSuccess />
+          <Route path="/auth-failure">
+            <CloseWindow authSuccess={false}/>
+          </Route>
+          <Route path="/">
+            { signedIn ? <Home /> : <StyledButton onClick={signInHandler}>Sign in to Spotify</StyledButton> }
           </Route>
         </Switch>
       </div>
@@ -52,7 +62,11 @@ function App() {
   );
 }
 
-const AuthSuccess = () => {
+const CloseWindow = ({ authSuccess }: { authSuccess: boolean } )=> {
+  const opener: Window  & { authSuccess?: boolean } | null  = window.opener;
+  if (opener) {
+    opener.authSuccess = authSuccess;
+  }
   window.close();
   return <div></div>;
 }
