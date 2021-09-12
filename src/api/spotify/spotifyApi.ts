@@ -18,7 +18,7 @@ export function isSignedIn() {
   return fetchApi<boolean>(`${API_BASE_URL}/spotify/is-signed-in`, {credentials: 'include'});
 }
 
-export function exportPlaylists(exportType: ExportType, selectedPlaylists: PlaylistState[], selectAll: boolean) {
+export function exportPlaylists(exportType: ExportType, selectedPlaylists: (PlaylistState | null)[], selectAll: boolean) {
   const queryParams = new URLSearchParams();
 
   queryParams.append('exportType', exportType);
@@ -28,7 +28,10 @@ export function exportPlaylists(exportType: ExportType, selectedPlaylists: Playl
   } else {
     let ids = '';
     if (selectedPlaylists) {
-      selectedPlaylists.forEach((el, index) => index === 0 ? ids += el.id : ids += `,${el.id}`)
+      selectedPlaylists.forEach((el, index) => {
+        if (!el) return;
+        return index === 0 ? ids += el.id : ids += `,${el.id}`;
+      });
     } 
     queryParams.append('ids', ids);
   }
@@ -70,14 +73,14 @@ export interface PlaylistsApiRes {
 }
 
 export interface PlaylistItem {
-  id: string,
+  id: string;
   name: string;
   description: string,
   images: any[];
   owner: {
     display_name: string,
     id: string,
-  },
+  };
   public: boolean;
-  tracksCount: number;
+  tracks: { total: number };
 }

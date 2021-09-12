@@ -17,20 +17,21 @@ export interface PlaylistState {
   id: string;
   name: string;
   checked: boolean;
+  tracksCount: number;
 }
 
 interface PlaylistsProps {
   tablePagination: PlaylistTablePaginationState, 
   tablePaginationChangeHandler: (action: TablePageChangeAction) => void,
-  playlists: PlaylistState[], 
-  playlistChangeHandler: (playlist: PlaylistState, newVal: boolean) => void,
+  playlists: (PlaylistState | null)[],
+  playlistChangeHandler: (playlist: (PlaylistState | null), newVal: boolean) => void,
   selectAll: boolean, 
   selectAllChangeHandler: (selectAllChange: boolean) => void 
 }
 
 const PlaylistContainer = styled.div`
   display: grid;
-  place-items: center;
+  place-items: left;
   justify-content: center;
 `
 
@@ -44,7 +45,6 @@ export function Playlists({
 }: PlaylistsProps) {
   return (
     <PlaylistContainer>
-
       <label>
         <input 
           type="checkbox" 
@@ -54,12 +54,15 @@ export function Playlists({
         />
         Select all
       </label>
-      {playlists && playlists.map(pl => 
-        <Playlist
-          key={pl.id}
-          playlist={pl}
-          changeHandler={playlistChangeHandler}
-        ></Playlist>
+      {playlists.length && playlists
+        .slice(tablePagination.offset, tablePagination.offset + tablePagination.limit)
+        .filter(el => el)
+        .map(pl => 
+          <Playlist
+            key={pl?.id}
+            playlist={pl as PlaylistState}
+            changeHandler={playlistChangeHandler}
+          ></Playlist>
       )}
       <button 
         onClick={() => tablePaginationChangeHandler(TablePageChangeAction.Backward)}
@@ -92,7 +95,7 @@ function Playlist({ playlist, changeHandler }:
         checked={playlist.checked}
         onChange={(e) => changeHandler(playlist, e.target.checked)}
       />
-      {playlist && playlist.name}
+      {playlist && `${playlist.name}, tracks: ${playlist.tracksCount}`}
     </label>
   );  
 }
