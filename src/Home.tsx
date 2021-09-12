@@ -87,7 +87,7 @@ export const Home = () => {
           <option value={ExportType.JSON} key={ExportType.JSON}>JSON</option>
         </select>
       </label>
-      <button onClick={() => requestExport()} disabled={!selectAll && !playlists.some(el => el.checked)}>Export</button>
+      <button onClick={requestExport} disabled={!selectAll && !playlists.some(el => el.checked)}>Export</button>
     </>
   );
 }
