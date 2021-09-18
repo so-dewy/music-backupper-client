@@ -4,7 +4,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { exportPlaylists, ExportType, getPlaylists, getUserInfo, PlaylistsApiRes } from './api/spotify/spotifyApi';
 import { Playlists, PlaylistState, PlaylistTablePaginationState, TablePageChangeAction } from './playlists/Playlists';
 
-export const Home = () => {
+export const UserPage = () => {
   const history = useHistory();
   const location = useLocation();
   const [userInfo, setUserInfo] = useState({ display_name: '' });
